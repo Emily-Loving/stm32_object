@@ -1,0 +1,15 @@
+plane\queue.o: ../Middlewares/Third_Party/FreeRTOS/Source/queue.c
+plane\queue.o: D:\keil5\32\ARM\ARMCC\Bin\..\include\stdlib.h
+plane\queue.o: D:\keil5\32\ARM\ARMCC\Bin\..\include\string.h
+plane\queue.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h
+plane\queue.o: D:\keil5\32\ARM\ARMCC\Bin\..\include\stddef.h
+plane\queue.o: D:\keil5\32\ARM\ARMCC\Bin\..\include\stdint.h
+plane\queue.o: ../Core/Inc/FreeRTOSConfig.h
+plane\queue.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h
+plane\queue.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/portable.h
+plane\queue.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/deprecated_definitions.h
+plane\queue.o: ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM3/portmacro.h
+plane\queue.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h
+plane\queue.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/task.h
+plane\queue.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h
+plane\queue.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/queue.h
