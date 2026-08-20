@@ -42,9 +42,7 @@ typedef struct {
     int16_t sGyroX;   // 陀螺仪 X 轴原始值 
     int16_t sGyroY;   // 陀螺仪 Y 轴原始值 
     int16_t sGyroZ;   // 陀螺仪 Z 轴原始值 
-    float   fRoll;    // Roll 角度 (度)
-    float   fPitch;   // Pitch 角度 (度)
-    float   fYaw;     // Yaw 角度 (度)
+//    float   fYaw;     // Yaw 角度 (度)
 } 
 MPU6050_DataTDF;
 
@@ -60,8 +58,8 @@ extern I2C_HandleTypeDef hi2c1;
 
 /* 函数声明：均返回 1=成功 0=失败 */
 void vMPU6050_WriteReg(uint8_t ucReg, uint8_t ucData);
+uint8_t ucMPU6050_Probe(void);   /* 读 WHO_AM_I 自检：1=在线 0=离线 */
 void vMPU6050_Init(void);
 uint8_t vMPU6050_Read(MPU6050_DataTDF *Data);
-void vMPU6050_UpdateAngles(MPU6050_DataTDF *Date, MPU6050_HandleDataTDF *Date2, float dt);
 
 #endif

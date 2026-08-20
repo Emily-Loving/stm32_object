@@ -1,5 +1,5 @@
 #include "bluetooth.h"
-#include <string.h>
+
 
 /* ======================= 接收与命令队列 ======================= */
 #define BUFFER_SIZE 8
@@ -138,8 +138,6 @@ void v_Bluetooth_Process(void)
         Servo = CommendBlue[5];           /* error */
     }
 
-    /* 轮询发送，保证字符串完整发出（中断方式连续发送会丢字节） */
     HAL_UART_Transmit(&huart1, (uint8_t *)Servo, (uint16_t)strlen(Servo), 100);
-    /* 追加换行符 "\r\n" */
     HAL_UART_Transmit(&huart1, (uint8_t *)CommendBlue[6], (uint16_t)strlen(CommendBlue[6]), 100);
 }

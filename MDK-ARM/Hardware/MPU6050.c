@@ -15,9 +15,33 @@ void vMPU6050_WriteReg(uint8_t ucReg, uint8_t ucData)
     HAL_I2C_Mem_Write(&hi2c1, MPU6050_ADDR, ucReg, I2C_MEMADD_SIZE_8BIT, &ucData, 1, HAL_MAX_DELAY);
 }
 
+/// @brief  读 MPU6050 单字节寄存器
+/// @return HAL_OK 表示读到应答
+static HAL_StatusTypeDef eMPU6050_ReadReg(uint8_t ucReg, uint8_t *pucData)
+{
+    return HAL_I2C_Mem_Read(&hi2c1, MPU6050_ADDR, ucReg, I2C_MEMADD_SIZE_8BIT,
+                            pucData, 1, MPU6050_TIMEOUT);
+}
+
+/// @brief  MPU6050 在线自检：读 WHO_AM_I，应为 0x68
+/// @return 1=在线且身份正确 0=无应答或身份错误
+uint8_t ucMPU6050_Probe(void)
+{
+    uint8_t ucId = 0;
+    if (eMPU6050_ReadReg(MPU6050_WHO_AM_I, &ucId) != HAL_OK)
+    {
+        return 0;   /* I2C 无应答：接线/地址/上拉/供电问题 */
+    }
+    return (ucId == 0x68) ? 1 : 0;   /* AD0=0 时 WHO_AM_I 固定为 0x68 */
+}
+
 /// @brief  初始化 MPU6050：唤醒 + 设量程（最简开启方式）
 void vMPU6050_Init(void)
 {
+    /* 先探测器件是否在线，便于定位硬件/接线问题（结果可打断点或串口观察） */
+    volatile uint8_t ucOnline = ucMPU6050_Probe();
+    (void)ucOnline;
+
     vMPU6050_WriteReg(MPU6050_PWR_MGMT_1, 0x00);
     vMPU6050_WriteReg(MPU6050_SMPLRT_DIV, 0x07);
     vMPU6050_WriteReg(MPU6050_CONFIG, 0x00);
@@ -51,46 +75,3 @@ uint8_t vMPU6050_Read(MPU6050_DataTDF *Data)   //vMPU6050_Read(MPU6050_DataTDF);
     return 1;
 }
 
-/// @brief  处理原始数据
-void vMPU6050_UpdateAngles(MPU6050_DataTDF *Date, MPU6050_HandleDataTDF *Date2, float dt)
-{
-    // 1. 转换为物理单位
-    float ax = (float)Date->sAccelX / ACCEL_SENSITIVITY;
-    float ay = (float)Date->sAccelY / ACCEL_SENSITIVITY;
-    float az = (float)Date->sAccelZ / ACCEL_SENSITIVITY;
-
-    float gx = (float)Date->sGyroX / GYRO_SENSITIVITY; // °/s
-    float gy = (float)Date->sGyroY / GYRO_SENSITIVITY;
-    float gz = (float)Date->sGyroZ / GYRO_SENSITIVITY;
-
-    // 2. 从加速度计算角度 (静态倾斜)
-    float accelRoll = atan2f(ay, az) * RAD_TO_DEG;
-    float accelPitch = atan2f(-ax, sqrtf(ay*ay + az*az)) * RAD_TO_DEG;
-
-    // 3. 互补滤波 (需要历史状态, 使用静态变量模拟)
-    static float fusedRoll = 0.0f, fusedPitch = 0.0f;// fusedYaw = 0.0f;
-    static uint8_t isFirstRun = 1;
-
-    if (isFirstRun)
-    {
-        fusedRoll = accelRoll;
-        fusedPitch = accelPitch;
-//      fusedYaw = 0.0f; // 初始为0
-        isFirstRun = 0;
-    }
-
-    // 陀螺仪积分
-    fusedRoll   += gx * dt;
-    fusedPitch  += gy * dt;
-//    fusedYaw    += gz * dt; // Yaw 只能靠陀螺仪积分，无法由加速度计校准，会漂移！
-
-    // 互补系数 (0.98 给陀螺仪, 0.02 给加速度计，用于校准水平角度)
-    float alpha = 0.98f;
-    fusedRoll = alpha * fusedRoll + (1.0f - alpha) * accelRoll;
-    fusedPitch = alpha * fusedPitch + (1.0f - alpha) * accelPitch;
-
-    // 写入结构体
-    Date2->fRoll = fusedRoll;
-    Date2->fPitch = fusedPitch;
-//    Date2->fYaw = fusedYaw; // 注意: Yaw 会随时间积累漂移
-}

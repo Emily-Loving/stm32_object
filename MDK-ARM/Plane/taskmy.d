@@ -36,6 +36,9 @@ plane\taskmy.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
 plane\taskmy.o: D:\keil5\32\ARM\ARMCC\Bin\..\include\math.h
 plane\taskmy.o: Hardware\bluetooth.h
 plane\taskmy.o: ../Core/Inc/usart.h
+plane\taskmy.o: D:\keil5\32\ARM\ARMCC\Bin\..\include\string.h
+plane\taskmy.o: Hardware\motor.h
+plane\taskmy.o: ../Core/Inc/tim.h
 plane\taskmy.o: Hardware\pid.h
 plane\taskmy.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/freertos.h
 plane\taskmy.o: ../Core/Inc/FreeRTOSConfig.h
@@ -45,3 +48,4 @@ plane\taskmy.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/deprecated_de
 plane\taskmy.o: ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM3/portmacro.h
 plane\taskmy.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h
 plane\taskmy.o: ../Core/Inc/gpio.h
+plane\taskmy.o: D:\keil5\32\ARM\ARMCC\Bin\..\include\stdio.h

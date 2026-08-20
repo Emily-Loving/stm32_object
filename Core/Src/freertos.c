@@ -139,7 +139,7 @@ void MX_FREERTOS_Init(void) {
 
   /* Create the queue(s) */
   /* creation of BlueQueue01 */
-  BlueQueue01Handle = osMessageQueueNew (16, sizeof(uint16_t), &BlueQueue01_attributes);
+  BlueQueue01Handle = osMessageQueueNew (16, sizeof(Fly_ModeTDF), &BlueQueue01_attributes);
 
   /* creation of MPUQueue02 */
   MPUQueue02Handle = osMessageQueueNew (8, sizeof(MPU6050_HandleDataTDF), &MPUQueue02_attributes);
@@ -182,10 +182,12 @@ void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN StartDefaultTask */
   /* Infinite loop */
+	
   for(;;)
   {
 	  LedTask();
     osDelay(10);
+	  Motor_middle();
   }
   /* USER CODE END StartDefaultTask */
 }
@@ -243,6 +245,7 @@ void PidStartTask03(void *argument)
 {
   /* USER CODE BEGIN PidStartTask03 */
   /* Infinite loop */
+	Motor_Init();
   for(;;)
   {
 	  v_PidTask();

@@ -2,6 +2,7 @@
 #define __bluetooth_H
 
 #include "usart.h"
+#include <string.h>
 
 /* 蓝牙命令应答表（按命令号索引，1~4 为方向，5=wait，6=error，7=帧尾分隔符） */
 extern const char *CommendBlue[];
@@ -16,7 +17,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart);
 void v_Bluetooth_Process(void);
 
 /* 索引与命令号对应：1->"up" 2->"down" 3->"left" 4->"right" 5->"wait" 6->"error" */
-static const char *CommendBlue[] =
+static const char *CommendBlue[10] =
 {
     "up",    /* [0] 命令 1 */
     "down",  /* [1] 命令 2 */
@@ -24,7 +25,10 @@ static const char *CommendBlue[] =
     "right", /* [3] 命令 4 */
     "wait",  /* [4] 命令 5 */
     "error", /* [5] 命令 6 */
-    "\r\n"    /* [6] 换行符（回车 + 换行） */
+    "\r\n",   /* [6] 换行符（回车 + 换行） */
+	";"			//[7]
+	"Pitch:"//[8]
+	"roll:"//[9]
 };
 
 /// @NOTE 状态机状态
