@@ -188,12 +188,12 @@
         <Ww>
           <count>0</count>
           <WinNumber>2</WinNumber>
-          <ItemText>PU</ItemText>
+          <ItemText>ucOnline</ItemText>
         </Ww>
         <Ww>
           <count>1</count>
           <WinNumber>2</WinNumber>
-          <ItemText>A</ItemText>
+          <ItemText>ucFoundAddr</ItemText>
         </Ww>
         <Ww>
           <count>2</count>

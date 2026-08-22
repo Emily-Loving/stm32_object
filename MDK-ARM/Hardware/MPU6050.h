@@ -56,9 +56,9 @@ MPU6050_HandleDataTDF;
 
 extern I2C_HandleTypeDef hi2c1;
 
-/* 函数声明：均返回 1=成功 0=失败 */
 void vMPU6050_WriteReg(uint8_t ucReg, uint8_t ucData);
-uint8_t ucMPU6050_Probe(void);   /* 读 WHO_AM_I 自检：1=在线 0=离线 */
+uint8_t ucMPU6050_Probe(void);  
+uint8_t ucI2C_Scan(void);     
 void vMPU6050_Init(void);
 uint8_t vMPU6050_Read(MPU6050_DataTDF *Data);
 

@@ -1,18 +1,15 @@
 #include "bluetooth.h"
 
-
-/* ======================= 接收与命令队列 ======================= */
 #define BUFFER_SIZE 8
 
-static uint8_t uc_ReceiveCom = 0;                        /* 中断接收缓冲（1 字节） */
-static volatile uint8_t ucBuffer[BUFFER_SIZE]; /* 命令队列 */
-static volatile uint8_t ucWrite = 0;             /* 写索引（中断侧） */
-static volatile uint8_t ucRead  = 0;             /* 读索引（任务侧） */
+static uint8_t uc_ReceiveCom = 0;                // 中断接收缓冲（1 字节） 
+static volatile uint8_t ucBuffer[BUFFER_SIZE];   // 命令队列 
+static volatile uint8_t ucWrite = 0;             // 写索引（中断侧） 
+static volatile uint8_t ucRead  = 0;             // 读索引（任务侧） 
 
 
 static volatile FrameState_t eFrame = Wait_Head;
 
-/* ======================= 初始化 ======================= */
 void v_Bluetooth_Init(void)
 {
     eFrame     = Wait_Head;
@@ -22,27 +19,24 @@ void v_Bluetooth_Init(void)
     HAL_UART_Receive_IT(&huart1, &uc_ReceiveCom, 1);
 }
 
-/* ======================= 命令入队（仅中断调用） ======================= */
 /// @NOTE 把数据存入ucBuffer
 static void v_CmdQueuePush(uint8_t ucCh)
 {
     uint8_t ucNext = (uint8_t)((ucWrite + 1) % BUFFER_SIZE);
 
-    if (ucNext != ucRead)          /* 队列未满才入队 */
+    if (ucNext != ucRead)         
     {
         ucBuffer[ucWrite] = ucCh;
         ucWrite = ucNext;
     }
-    /* 队列满则丢弃当前命令，避免覆盖未处理命令 */
 }
 
-/* ======================= 命令出队（仅任务调用） ======================= */
 /// @NOTE 队列空就返回数据
 static uint8_t uc_CmdQueuePop(void)
 {
     uint8_t ucCh;
 
-    if (ucRead == ucWrite)      /* 队列空 */
+    if (ucRead == ucWrite)      // 队列空 
     {
         return 0;
     }
@@ -52,8 +46,7 @@ static uint8_t uc_CmdQueuePop(void)
     return ucCh;
 }
 
-/* ======================= 串口接收完成回调（中断上下文） ======================= */
-/* 注意：此函数在中断中执行，只做帧解析与入队，严禁耗时操作 */
+
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
     uint8_t ucCh;
@@ -77,23 +70,23 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
         case Wait_Num:
             if ((ucCh >= '1') && (ucCh <= '6'))
             {
-                v_CmdQueuePush((uint8_t)(ucCh - '0'));   /* '1'->1 ... '6'->6 */
+                v_CmdQueuePush((uint8_t)(ucCh - '0'));   // '1'->1 ... '6'->6 
                 eFrame = Wait_Tail;
             }
             else if (ucCh == '[')
             {
-                eFrame = Wait_Num;   /* 重新开始一帧 */
+                eFrame = Wait_Num;     // 重新开始一帧 
             }
             else
             {
-                eFrame = Wait_Head;    /* 非法字符，放弃本帧 */
+                eFrame = Wait_Head;    // 非法字符，放弃本帧 
             }
             break;
 
         case Wait_Tail:
             if (ucCh == ']')
             {
-                eFrame = Wait_Head;    /* 一帧完整结束 */
+                eFrame = Wait_Head;    
             }
             else if (ucCh == '[')
             {
@@ -109,35 +102,35 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
             eFrame = Wait_Head;
             break;
     }
-
-    /* 必须重新开启接收，否则后续数据无法触发中断 */
     HAL_UART_Receive_IT(&huart1, &uc_ReceiveCom, 1);
 }
 
-/* ======================= 蓝牙任务处理（任务上下文） ======================= */
-void v_Bluetooth_Process(void)
+/// @NOTE 从命令队列取命令，带状态保持：收到新命令后持续返回该命令，
+///       直到下一个新命令到来才切换（队列空时保持上次状态）。
+/// @return 0=up 1=down 2=left 3=right 4=go 5=back 6=wait 7=error 见Variable.h的指令表
+uint8_t v_Bluetooth_Process(void)
 {
-    const char *Servo;
+	static uint8_t s_LastCmd = 6;
+
     uint8_t ucCh = uc_CmdQueuePop();
 
     if (ucCh == 0)
-    {
-        return;   /* 无待处理命令 */
+    {     
+        return s_LastCmd;					// 队列空 没有新命令 保持上一个latch状态 让电机持续转
     }
-
-    if ((ucCh >= 1) && (ucCh <= 4))
+    else if ((ucCh >= 1) && (ucCh <= 6))	//见Variable.h的指令表
     {
-        Servo = CommendBlue[ucCh - 1];   /* up/down/left/right */
+        s_LastCmd = (uint8_t)(ucCh - 1);    //见Variable.h的指令表
     }
-    else if (ucCh == 5)
+    else if (ucCh == 7)
     {
-        Servo = CommendBlue[4];           /* wait */
+        s_LastCmd = 6;       				//见Variable.h的指令表               
     }
     else
     {
-        Servo = CommendBlue[5];           /* error */
+        //非法命令 返回 error，但不打断当前保持的动作 
+        return 7;							//见Variable.h的指令表
     }
 
-    HAL_UART_Transmit(&huart1, (uint8_t *)Servo, (uint16_t)strlen(Servo), 100);
-    HAL_UART_Transmit(&huart1, (uint8_t *)CommendBlue[6], (uint16_t)strlen(CommendBlue[6]), 100);
+	return s_LastCmd;
 }

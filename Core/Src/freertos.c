@@ -85,16 +85,6 @@ osMessageQueueId_t MPUQueue02Handle;
 const osMessageQueueAttr_t MPUQueue02_attributes = {
   .name = "MPUQueue02"
 };
-/* Definitions for MPUBinarySem01 */
-osSemaphoreId_t MPUBinarySem01Handle;
-const osSemaphoreAttr_t MPUBinarySem01_attributes = {
-  .name = "MPUBinarySem01"
-};
-/* Definitions for BlueCountingSem01 */
-osSemaphoreId_t BlueCountingSem01Handle;
-const osSemaphoreAttr_t BlueCountingSem01_attributes = {
-  .name = "BlueCountingSem01"
-};
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -122,13 +112,6 @@ void MX_FREERTOS_Init(void) {
   /* add mutexes, ... */
   /* USER CODE END RTOS_MUTEX */
 
-  /* Create the semaphores(s) */
-  /* creation of MPUBinarySem01 */
-  MPUBinarySem01Handle = osSemaphoreNew(1, 1, &MPUBinarySem01_attributes);
-
-  /* creation of BlueCountingSem01 */
-  BlueCountingSem01Handle = osSemaphoreNew(2, 0, &BlueCountingSem01_attributes);
-
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
   /* USER CODE END RTOS_SEMAPHORES */
@@ -142,7 +125,7 @@ void MX_FREERTOS_Init(void) {
   BlueQueue01Handle = osMessageQueueNew (16, sizeof(Fly_ModeTDF), &BlueQueue01_attributes);
 
   /* creation of MPUQueue02 */
-  MPUQueue02Handle = osMessageQueueNew (8, sizeof(MPU6050_HandleDataTDF), &MPUQueue02_attributes);
+  MPUQueue02Handle = osMessageQueueNew (24, sizeof(MPU6050_HandleDataTDF), &MPUQueue02_attributes);
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
@@ -187,7 +170,7 @@ void StartDefaultTask(void *argument)
   {
 	  LedTask();
     osDelay(10);
-	  Motor_middle();
+
   }
   /* USER CODE END StartDefaultTask */
 }
@@ -208,8 +191,8 @@ void BlueStartTask01(void *argument)
 
   for(;;)
   {
-	  vBlueTask();
-    osDelay(10);
+	vBlueTask();
+    osDelay(50); //多久发一次数据
   }
   /* USER CODE END BlueStartTask01 */
 }
@@ -248,6 +231,7 @@ void PidStartTask03(void *argument)
 	Motor_Init();
   for(;;)
   {
+	  
 	  v_PidTask();
     osDelay(10);
   }
