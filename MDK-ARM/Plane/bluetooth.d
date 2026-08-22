@@ -32,3 +32,4 @@ plane\bluetooth.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h
 plane\bluetooth.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h
 plane\bluetooth.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
 plane\bluetooth.o: D:\keil5\32\ARM\ARMCC\Bin\..\include\string.h
+plane\bluetooth.o: Hardware\Variable.h

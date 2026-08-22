@@ -30,29 +30,27 @@
 #define MPU6050_GYRO_ZOUT_H  0x47
 #define MPU6050_GYRO_ZOUT_L  0x48
 
-
 #define ACCEL_SENSITIVITY 16384.0f  // ±2g
 #define GYRO_SENSITIVITY 16.4f      // ±2000°/s
 #define RAD_TO_DEG 57.3f
 
 typedef struct {
-    int16_t sAccelX;  // 加速度 X 轴原始值 
-    int16_t sAccelY;  // 加速度 Y 轴原始值 
-    int16_t sAccelZ;  // 加速度 Z 轴原始值 
-    int16_t sGyroX;   // 陀螺仪 X 轴原始值 
-    int16_t sGyroY;   // 陀螺仪 Y 轴原始值 
-    int16_t sGyroZ;   // 陀螺仪 Z 轴原始值 
+    int16_t s_Mpu_AccelX;  // 加速度 X 轴原始值 
+    int16_t s_Mpu_AccelY;  // 加速度 Y 轴原始值 
+    int16_t s_Mpu_AccelZ;  // 加速度 Z 轴原始值 
+    int16_t s_Mpu_GyroX;   // 陀螺仪 X 轴原始值 
+    int16_t s_Mpu_GyroY;   // 陀螺仪 Y 轴原始值 
+    int16_t s_Mpu_GyroZ;   // 陀螺仪 Z 轴原始值 
 //    float   fYaw;     // Yaw 角度 (度)
 } 
 MPU6050_DataTDF;
 
 typedef struct {
-    float   fRoll;    // Roll 角度 (度)
-    float   fPitch;   // Pitch 角度 (度)
+    float   f_Mpu_Roll;    // Roll 角度 (度)
+    float   f_Mpu_Pitch;   // Pitch 角度 (度)
 //    float   fYaw;     // Yaw 角度 (度)
 } 
 MPU6050_HandleDataTDF;
-
 
 extern I2C_HandleTypeDef hi2c1;
 

@@ -36,3 +36,4 @@ plane\motor.o: Hardware\MPU6050.h
 plane\motor.o: ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h
 plane\motor.o: ../Core/Inc/i2c.h
 plane\motor.o: D:\keil5\32\ARM\ARMCC\Bin\..\include\math.h
+plane\motor.o: Hardware\Variable.h

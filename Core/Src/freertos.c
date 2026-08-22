@@ -122,10 +122,10 @@ void MX_FREERTOS_Init(void) {
 
   /* Create the queue(s) */
   /* creation of BlueQueue01 */
-  BlueQueue01Handle = osMessageQueueNew (16, sizeof(Fly_ModeTDF), &BlueQueue01_attributes);
+  BlueQueue01Handle = osMessageQueueNew (16, sizeof(uint16_t), &BlueQueue01_attributes);
 
   /* creation of MPUQueue02 */
-  MPUQueue02Handle = osMessageQueueNew (24, sizeof(MPU6050_HandleDataTDF), &MPUQueue02_attributes);
+  MPUQueue02Handle = osMessageQueueNew (24, sizeof(uint16_t), &MPUQueue02_attributes);
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
@@ -168,7 +168,7 @@ void StartDefaultTask(void *argument)
 	
   for(;;)
   {
-	  LedTask();
+    LedTask();
     osDelay(10);
 
   }
@@ -192,7 +192,8 @@ void BlueStartTask01(void *argument)
   for(;;)
   {
 	vBlueTask();
-    osDelay(50); //多久发一次数据
+	/*osDelay(10)~osDelay(80)与[1,10]的映射  作用是控制蓝牙发送数据的快慢，见Variable.h*/
+    osDelay((int)((70 * BLUE_SEND_TIME)/9 + 0.5)); 
   }
   /* USER CODE END BlueStartTask01 */
 }
@@ -231,8 +232,7 @@ void PidStartTask03(void *argument)
 	Motor_Init();
   for(;;)
   {
-	  
-	  v_PidTask();
+	v_PidTask();
     osDelay(10);
   }
   /* USER CODE END PidStartTask03 */

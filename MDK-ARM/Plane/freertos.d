@@ -47,8 +47,11 @@ plane\freertos.o: D:\keil5\32\ARM\ARMCC\Bin\..\include\math.h
 plane\freertos.o: ./Hardware/bluetooth.h
 plane\freertos.o: ../Core/Inc/usart.h
 plane\freertos.o: D:\keil5\32\ARM\ARMCC\Bin\..\include\string.h
+plane\freertos.o: ./Hardware/Variable.h
 plane\freertos.o: ./Hardware/motor.h
 plane\freertos.o: ../Core/Inc/tim.h
 plane\freertos.o: ./Hardware/pid.h
+plane\freertos.o: ./Hardware/Variable.h
 plane\freertos.o: ../Core/Inc/gpio.h
 plane\freertos.o: D:\keil5\32\ARM\ARMCC\Bin\..\include\stdio.h
+plane\freertos.o: ./Hardware/Variable.h

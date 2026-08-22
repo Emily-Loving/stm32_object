@@ -2,135 +2,145 @@
 
 #define BUFFER_SIZE 8
 
-static uint8_t uc_ReceiveCom = 0;                // 中断接收缓冲（1 字节） 
-static volatile uint8_t ucBuffer[BUFFER_SIZE];   // 命令队列 
-static volatile uint8_t ucWrite = 0;             // 写索引（中断侧） 
-static volatile uint8_t ucRead  = 0;             // 读索引（任务侧） 
+static uint8_t uc_Blue_ReceiveCom = 0;                // 中断接收缓冲（1 字节） 
+static volatile uint8_t uc_Blue_Buffer[BUFFER_SIZE];  // 命令队列 
+static volatile uint8_t uc_Blue_Write = 0;            // 写索引（中断侧） 
+static volatile uint8_t uc_Blue_Read  = 0;            // 读索引（任务侧） 
 
 
-static volatile FrameState_t eFrame = Wait_Head;
+static volatile FrameState_t e_Blue_Frame = Wait_Head;
 
+/// @NOTE 蓝牙初始化：复位帧状态机与读写索引，开启串口接收中断
+/// @param void
+/// @return
 void v_Bluetooth_Init(void)
 {
-    eFrame     = Wait_Head;
-    ucWrite = 0;
-    ucRead  = 0;
+    e_Blue_Frame = Wait_Head;
+    uc_Blue_Write = 0;
+    uc_Blue_Read  = 0;
 
-    HAL_UART_Receive_IT(&huart1, &uc_ReceiveCom, 1);
+    HAL_UART_Receive_IT(&huart1, &uc_Blue_ReceiveCom, 1);
 }
 
-/// @NOTE 把数据存入ucBuffer
-static void v_CmdQueuePush(uint8_t ucCh)
+/// @NOTE 把数据存入命令队列（队列满则丢弃）
+/// @param uc_Blue_Ch 待入队的命令字节
+/// @return
+static void v_CmdQueuePush(uint8_t uc_Blue_Ch)
 {
-    uint8_t ucNext = (uint8_t)((ucWrite + 1) % BUFFER_SIZE);
+    uint8_t uc_Blue_Next = (uint8_t)((uc_Blue_Write + 1) % BUFFER_SIZE);
 
-    if (ucNext != ucRead)         
+    if (uc_Blue_Next != uc_Blue_Read)         
     {
-        ucBuffer[ucWrite] = ucCh;
-        ucWrite = ucNext;
+        uc_Blue_Buffer[uc_Blue_Write] = uc_Blue_Ch;
+        uc_Blue_Write = uc_Blue_Next;
     }
 }
 
-/// @NOTE 队列空就返回数据
+/// @NOTE 从命令队列取一个字节
+/// @param void
+/// @return 取出的命令字节，队列空返回 0
 static uint8_t uc_CmdQueuePop(void)
 {
-    uint8_t ucCh;
+    uint8_t uc_Blue_Ch;
 
-    if (ucRead == ucWrite)      // 队列空 
+    if (uc_Blue_Read == uc_Blue_Write)      // 队列空 
     {
         return 0;
     }
 
-    ucCh = ucBuffer[ucRead];
-    ucRead = (uint8_t)((ucRead + 1) % BUFFER_SIZE);
-    return ucCh;
+    uc_Blue_Ch = uc_Blue_Buffer[uc_Blue_Read];
+    uc_Blue_Read = (uint8_t)((uc_Blue_Read + 1) % BUFFER_SIZE);
+    return uc_Blue_Ch;
 }
 
-
+/// @NOTE 串口接收完成回调：按 [数字] 帧格式的状态机解析并把命令入队
+/// @param huart 触发回调的串口句柄
+/// @return
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-    uint8_t ucCh;
+    uint8_t uc_Blue_Ch;
 
     if (huart->Instance != USART1)
     {
         return;
     }
 
-    ucCh = uc_ReceiveCom;
+    uc_Blue_Ch = uc_Blue_ReceiveCom;
 
-    switch (eFrame)
+    switch (e_Blue_Frame)
     {
         case Wait_Head:
-            if (ucCh == '[')
+            if (uc_Blue_Ch == '[')
             {
-                eFrame = Wait_Num;
+                e_Blue_Frame = Wait_Num;
             }
             break;
 
         case Wait_Num:
-            if ((ucCh >= '1') && (ucCh <= '6'))
+            if ((uc_Blue_Ch >= '1') && (uc_Blue_Ch <= '6'))
             {
-                v_CmdQueuePush((uint8_t)(ucCh - '0'));   // '1'->1 ... '6'->6 
-                eFrame = Wait_Tail;
+                v_CmdQueuePush((uint8_t)(uc_Blue_Ch - '0'));   // '1'->1 ... '6'->6 
+                e_Blue_Frame = Wait_Tail;
             }
-            else if (ucCh == '[')
+            else if (uc_Blue_Ch == '[')
             {
-                eFrame = Wait_Num;     // 重新开始一帧 
+                e_Blue_Frame = Wait_Num;     // 重新开始一帧 
             }
             else
             {
-                eFrame = Wait_Head;    // 非法字符，放弃本帧 
+                e_Blue_Frame = Wait_Head;    // 非法字符，放弃本帧 
             }
             break;
 
         case Wait_Tail:
-            if (ucCh == ']')
+            if (uc_Blue_Ch == ']')
             {
-                eFrame = Wait_Head;    
+                e_Blue_Frame = Wait_Head;    
             }
-            else if (ucCh == '[')
+            else if (uc_Blue_Ch == '[')
             {
-                eFrame = Wait_Num;
+                e_Blue_Frame = Wait_Num;
             }
             else
             {
-                eFrame = Wait_Head;
+                e_Blue_Frame = Wait_Head;
             }
             break;
 
         default:
-            eFrame = Wait_Head;
+            e_Blue_Frame = Wait_Head;
             break;
     }
-    HAL_UART_Receive_IT(&huart1, &uc_ReceiveCom, 1);
+    HAL_UART_Receive_IT(&huart1, &uc_Blue_ReceiveCom, 1);
 }
 
 /// @NOTE 从命令队列取命令，带状态保持：收到新命令后持续返回该命令，
 ///       直到下一个新命令到来才切换（队列空时保持上次状态）。
-/// @return 0=up 1=down 2=left 3=right 4=go 5=back 6=wait 7=error 见Variable.h的指令表
+/// @param void
+/// @return 0=up 1=down 2=left 3=right 4=go 5=back 6=wait 7=error 见 Variable.h 的指令表
 uint8_t v_Bluetooth_Process(void)
 {
-	static uint8_t s_LastCmd = 6;
+	static uint8_t uc_Blue_LastCmd = 6;
 
-    uint8_t ucCh = uc_CmdQueuePop();
+    uint8_t uc_Blue_Ch = uc_CmdQueuePop();
 
-    if (ucCh == 0)
+    if (uc_Blue_Ch == 0)
     {     
-        return s_LastCmd;					// 队列空 没有新命令 保持上一个latch状态 让电机持续转
+        return uc_Blue_LastCmd;							// 队列空 没有新命令 保持上一个latch状态 让电机持续转
     }
-    else if ((ucCh >= 1) && (ucCh <= 6))	//见Variable.h的指令表
+    else if ((uc_Blue_Ch >= 1) && (uc_Blue_Ch <= 6))	//见Variable.h的指令表
     {
-        s_LastCmd = (uint8_t)(ucCh - 1);    //见Variable.h的指令表
+        uc_Blue_LastCmd = (uint8_t)(uc_Blue_Ch - 1);    //见Variable.h的指令表
     }
-    else if (ucCh == 7)
+    else if (uc_Blue_Ch == 7)
     {
-        s_LastCmd = 6;       				//见Variable.h的指令表               
+        uc_Blue_LastCmd = 6;       						//见Variable.h的指令表               
     }
     else
     {
         //非法命令 返回 error，但不打断当前保持的动作 
-        return 7;							//见Variable.h的指令表
+        return 7;										//见Variable.h的指令表
     }
 
-	return s_LastCmd;
+	return uc_Blue_LastCmd;
 }

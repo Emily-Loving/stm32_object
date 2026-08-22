@@ -10,6 +10,7 @@
 #include "cmsis_os2.h"
 #include <string.h>
 #include <stdio.h>
+#include "Variable.h"
 
 extern osMessageQueueId_t MPUQueue02Handle;
 extern osMessageQueueId_t BlueQueue01Handle;
@@ -18,6 +19,5 @@ void vBlueTask(void);
 void v_MPU6050Task(void);
 void v_PidTask(void);
 void LedTask(void);
-
 
 #endif

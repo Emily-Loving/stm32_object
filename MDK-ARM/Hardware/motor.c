@@ -1,16 +1,8 @@
 #include "motor.h"
 
-/// @NOTE 占空比(0.0~1.0) -> CCR 计数值。ARR 从定时器动态读取，
-///       与 CubeMX 里配置的 Period 自动保持一致，避免写死。
-static uint32_t Duty_To_CCR(float duty)
-{
-	uint32_t arr = __HAL_TIM_GET_AUTORELOAD(&htim2);   // = htim2.Instance->ARR
-	if (duty < 0.0f) duty = 0.0f;
-	if (duty > 1.0f) duty = 1.0f;
-	// +1 是因为 PWM 周期实际为 (ARR+1) 个计数 
-	return (uint32_t)(duty * (float)(arr + 1) + 0.5f);
-}
-
+/// @NOTE 初始化四路电机 PWM 并全部置为停机状态
+/// @param void
+/// @return
 void Motor_Init(void)
 {
 	HAL_TIM_PWM_Start(&htim2,TIM_CHANNEL_1);
@@ -24,78 +16,81 @@ void Motor_Init(void)
 	Hanlde_Motorapp(Motor_4, Motor_State0);
 }
 
-/// @NOTE 控制单个电机
+/// @NOTE 控制单个电机做一步加/减速（在当前 CCR 上按步长增减并夹到上下限）
 /// @param Num 电机编号
-/// @param State 电机状态 2 单击加速 3单击减速
+/// @param State 电机状态 2 单击加速 3 单击减速
+/// @return
 void Hanlde_Motorapp(Motor_Number_t Num, Motor_State_t State)
 {
 	
 	if (State == Motor_State2)
 	{
-		uint32_t CCR = return_CCR(Num);
+		uint32_t u32_Motor_Ccr = return_CCR(Num);
+		u32_Motor_Ccr += MOTOR_STEP;
 
-		CCR += MOTOR_STEP;
-
-		/* 加速：升到上限就夹在上限 */
-		if (CCR >= MOTOR_MAX_CCR)
+		if (u32_Motor_Ccr >= MOTOR_MAX_CCR)
 		{
-			CCR = MOTOR_MAX_CCR;
+			u32_Motor_Ccr = MOTOR_MAX_CCR;
 		}
 
 		switch (Num)
 			{
-				case Motor_1:{__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, CCR);break;}
-				case Motor_2:{__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, CCR);break;}
-				case Motor_3:{__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, CCR);break;}
-				case Motor_4:{__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, CCR);break;}
+				case Motor_1:{__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, u32_Motor_Ccr);break;}
+				case Motor_2:{__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, u32_Motor_Ccr);break;}
+				case Motor_3:{__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, u32_Motor_Ccr);break;}
+				case Motor_4:{__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, u32_Motor_Ccr);break;}
 				default: break;
 			}				
 	}
 	
 	else if (State == Motor_State3)
 	{
-		uint32_t CCR = return_CCR(Num);
+		uint32_t u32_Motor_Ccr = return_CCR(Num);
 
 		/* 减速：无符号先防下溢，再夹在下限 */
-		if (CCR <= MOTOR_MIN_CCR + MOTOR_STEP)
+		if (u32_Motor_Ccr <= MOTOR_MIN_CCR + MOTOR_STEP)
 		{
-			CCR = MOTOR_MIN_CCR;
+			u32_Motor_Ccr = MOTOR_MIN_CCR;
 		}
 		else
 		{
-			CCR -= MOTOR_STEP;
+			u32_Motor_Ccr -= MOTOR_STEP;
 		}
 
 		switch (Num)
 		{
-			case Motor_1:{__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, CCR);break;}
-			case Motor_2:{__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, CCR);break;}
-			case Motor_3:{__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, CCR);break;}
-			case Motor_4:{__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, CCR);break;}
+			case Motor_1:{__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, u32_Motor_Ccr);break;}
+			case Motor_2:{__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, u32_Motor_Ccr);break;}
+			case Motor_3:{__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, u32_Motor_Ccr);break;}
+			case Motor_4:{__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, u32_Motor_Ccr);break;}
 			default: break;
 		}	
 	}
 }
 
+/// @NOTE 读取指定通道当前的 CCR 计数值
+/// @param ch 电机编号
+/// @return 该通道当前的 CCR 计数值，非法编号返回 0
 uint32_t return_CCR(Motor_Number_t ch)
 {
 	
-	uint32_t Duty_ch1 = htim2.Instance->CCR1;
-	uint32_t Duty_ch2 = htim2.Instance->CCR2;
-	uint32_t Duty_ch3 = htim2.Instance->CCR3;
-	uint32_t Duty_ch4 = htim2.Instance->CCR4;
+	uint32_t u32_Motor_DutyCh1 = htim2.Instance->CCR1;
+	uint32_t u32_Motor_DutyCh2 = htim2.Instance->CCR2;
+	uint32_t u32_Motor_DutyCh3 = htim2.Instance->CCR3;
+	uint32_t u32_Motor_DutyCh4 = htim2.Instance->CCR4;
 	
-	if (ch == Motor_1){return Duty_ch1;}
-	else if (ch == Motor_2){return Duty_ch2;}
-	else if (ch == Motor_3){return Duty_ch3;}
-	else if (ch == Motor_4){return Duty_ch4;}
+	if (ch == Motor_1){return u32_Motor_DutyCh1;}
+	else if (ch == Motor_2){return u32_Motor_DutyCh2;}
+	else if (ch == Motor_3){return u32_Motor_DutyCh3;}
+	else if (ch == Motor_4){return u32_Motor_DutyCh4;}
 	else{return 0;}
 }
 
 
 /// @NOTE 控制单个电机
 /// @param Num 电机编号
-/// @param Stste 电机状态 0 停止 1加速到阈值 2 加速 3减速 
+/// @param State 电机状态 0 停止 1 加速到阈值 2 加速 3 减速
+/// @return
 void Hanlde_Motor(Motor_Number_t Num, Motor_State_t State)
 {
 	switch (Num)
@@ -152,7 +147,9 @@ void Hanlde_Motor(Motor_Number_t Num, Motor_State_t State)
 	}
 }
 
-/// @NOTE 	起飞
+/// @NOTE 起飞：四路电机同时加速到阈值
+/// @param void
+/// @return
 void Motor_middle(void)
 {
 	Hanlde_Motor(Motor_1, Motor_State1);
@@ -161,7 +158,9 @@ void Motor_middle(void)
 	Hanlde_Motor(Motor_4, Motor_State1);
 }
 
-/// @NOTE    下降
+/// @NOTE 下降：四路电机同时减速
+/// @param void
+/// @return
 void Motor_down(void)
 {
 	Hanlde_Motor(Motor_1, Motor_State3);
@@ -170,7 +169,9 @@ void Motor_down(void)
 	Hanlde_Motor(Motor_4, Motor_State3);	
 }
 
-/// @NOTE	前进
+/// @NOTE 前进：调整前后两路电机转速差实现俯冲前进
+/// @param void
+/// @return
 void Motor_go(void)
 {
 	Hanlde_Motor(Motor_1, Motor_State1);
@@ -184,7 +185,9 @@ void Motor_go(void)
 	Hanlde_Motor(Motor_4, Motor_State1);	
 }
 
-/// @NOTE	后退
+/// @NOTE 后退：调整前后两路电机转速差实现后退
+/// @param void
+/// @return
 void Motor_back(void)
 {
 	Hanlde_Motor(Motor_1, Motor_State1);
@@ -198,7 +201,9 @@ void Motor_back(void)
 	Hanlde_Motor(Motor_4, Motor_State3);	
 }
 
-/// @NOTE 左转
+/// @NOTE 左转：调整左右两路电机转速差实现左转
+/// @param void
+/// @return
 void Motor_left(void)
 {
 	Hanlde_Motor(Motor_1, Motor_State1);
@@ -212,7 +217,9 @@ void Motor_left(void)
 	Hanlde_Motor(Motor_4, Motor_State3);
 }
 
-/// @NOTE 右转
+/// @NOTE 右转：调整左右两路电机转速差实现右转
+/// @param void
+/// @return
 void Motor_right(void)
 {
 	Hanlde_Motor(Motor_1, Motor_State1);
@@ -226,33 +233,35 @@ void Motor_right(void)
 	Hanlde_Motor(Motor_4, Motor_State1);
 }
 
-/// @NOTE 缓慢减速停机（单路）：学 Hanlde_Motorapp 的减速框架，
-///       直接在当前 CCR 计数值上减 MOTOR_STEP，夹到 0，
-///       非阻塞，依赖任务循环反复调用逐步减到 0。
+/// @NOTE 缓慢减速停机（单路）：在当前 CCR 上减 MOTOR_STEP 并夹到 0，非阻塞，需任务循环反复调用
+/// @param Num 电机编号
+/// @return
 void Motor_stopapp(Motor_Number_t Num)
 {
-	uint32_t CCR = return_CCR(Num);
+	uint32_t u32_Motor_Ccr = return_CCR(Num);
 
-	if (CCR <= MOTOR_STEP)
+	if (u32_Motor_Ccr <= MOTOR_STEP)
 	{
-		CCR = 0;                 
+		u32_Motor_Ccr = 0;                 
 	}
 	else
 	{
-		CCR -= MOTOR_STEP;   /* 递减一个步长 */
+		u32_Motor_Ccr -= MOTOR_STEP;   
 	}
 
 	switch (Num)
 	{
-		case Motor_1:{__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, CCR);break;}
-		case Motor_2:{__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, CCR);break;}
-		case Motor_3:{__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, CCR);break;}
-		case Motor_4:{__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, CCR);break;}
+		case Motor_1:{__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, u32_Motor_Ccr);break;}
+		case Motor_2:{__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, u32_Motor_Ccr);break;}
+		case Motor_3:{__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, u32_Motor_Ccr);break;}
+		case Motor_4:{__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, u32_Motor_Ccr);break;}
 		default: break;
 	}
 }
 
 /// @NOTE 缓慢减速停机：4 路各减一档，非阻塞逐步到 0
+/// @param void
+/// @return
 void Motor_stop(void)
 {
 	Motor_stopapp(Motor_1);
@@ -261,6 +270,9 @@ void Motor_stop(void)
 	Motor_stopapp(Motor_4);
 }
 
+/// @NOTE 按蓝牙命令号分发对应飞行动作，未定义动作(wait/error/越界)一律停机
+/// @param Num 命令号 0 起飞 1 下降 2 左 3 右 4 前进 5 后退
+/// @return
 void useMotor(uint8_t Num)
 {
 	switch (Num)
@@ -275,26 +287,26 @@ void useMotor(uint8_t Num)
 	}
 }
 
-/// @NOTE 保护函数 处理mpu给的数据
-/// @RETURN 0正常 1错误
+/// @NOTE 保护函数 处理 mpu 给的数据：角度超限则起飞回正
+/// @param Date MPU6050 解算后的角度数据
+/// @return 0 正常 1 错误
 uint8_t Analyse_Date_pid(MPU6050_HandleDataTDF *Date)
 {
-	uint8_t Flag = 1;
-	if (Date -> fPitch >= FPITCH_ANGLE_MAX || Date -> fPitch <= FPITCH_ANGLE_MIN)
+	uint8_t uc_Motor_Flag = 1;
+	if (Date -> f_Mpu_Pitch >= FPITCH_ANGLE_MAX || Date -> f_Mpu_Pitch <= FPITCH_ANGLE_MIN)
 	{
 		Motor_middle();
-		Flag = 1;
-		return Flag;		
+		uc_Motor_Flag = 1;
+		return uc_Motor_Flag;		
 	}
-	else if (Date -> fRoll >= FPITCH_ANGLE_MAX || Date -> fRoll <= FPITCH_ANGLE_MIN)
+	else if (Date -> f_Mpu_Roll >= FPITCH_ANGLE_MAX || Date -> f_Mpu_Roll <= FPITCH_ANGLE_MIN)
 	{
 		Motor_middle();
-		Flag = 1;
-		return Flag;
+		uc_Motor_Flag = 1;
+		return uc_Motor_Flag;
 	}
 	else
 	{
 		return 0;
 	}
 }
-

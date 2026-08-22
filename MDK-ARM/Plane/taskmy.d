@@ -37,9 +37,11 @@ plane\taskmy.o: D:\keil5\32\ARM\ARMCC\Bin\..\include\math.h
 plane\taskmy.o: Hardware\bluetooth.h
 plane\taskmy.o: ../Core/Inc/usart.h
 plane\taskmy.o: D:\keil5\32\ARM\ARMCC\Bin\..\include\string.h
+plane\taskmy.o: Hardware\Variable.h
 plane\taskmy.o: Hardware\motor.h
 plane\taskmy.o: ../Core/Inc/tim.h
 plane\taskmy.o: Hardware\pid.h
+plane\taskmy.o: Hardware\Variable.h
 plane\taskmy.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/freertos.h
 plane\taskmy.o: ../Core/Inc/FreeRTOSConfig.h
 plane\taskmy.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h
@@ -49,3 +51,4 @@ plane\taskmy.o: ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM3
 plane\taskmy.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h
 plane\taskmy.o: ../Core/Inc/gpio.h
 plane\taskmy.o: D:\keil5\32\ARM\ARMCC\Bin\..\include\stdio.h
+plane\taskmy.o: Hardware\Variable.h
