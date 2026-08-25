@@ -47,7 +47,7 @@ void Hanlde_Motorapp(Motor_Number_t Num, Motor_State_t State)
 	{
 		uint32_t u32_Motor_Ccr = return_CCR(Num);
 
-		/* 减速：无符号先防下溢，再夹在下限 */
+		// 减速：无符号先防下溢，再夹在下限 
 		if (u32_Motor_Ccr <= MOTOR_MIN_CCR + MOTOR_STEP)
 		{
 			u32_Motor_Ccr = MOTOR_MIN_CCR;
@@ -283,7 +283,7 @@ void useMotor(uint8_t Num)
 		case 3: {Motor_right(); break;}
 		case 4: {Motor_go(); break;}
 		case 5: {Motor_back(); break;}
-		default: {Motor_stop(); break;}   /* 非定义动作(wait/error/越界)一律停机 */
+		default: {Motor_stop(); break;}   // 非定义动作(wait/error/越界)一律停机 
 	}
 }
 

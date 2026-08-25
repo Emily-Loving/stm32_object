@@ -41,14 +41,14 @@ typedef struct {
     int16_t s_Mpu_GyroX;   // 陀螺仪 X 轴原始值 
     int16_t s_Mpu_GyroY;   // 陀螺仪 Y 轴原始值 
     int16_t s_Mpu_GyroZ;   // 陀螺仪 Z 轴原始值 
-//    float   fYaw;     // Yaw 角度 (度)
+//    float   fYaw;     // Yaw 角度 (度)  此项目用不到
 } 
 MPU6050_DataTDF;
 
 typedef struct {
     float   f_Mpu_Roll;    // Roll 角度 (度)
     float   f_Mpu_Pitch;   // Pitch 角度 (度)
-//    float   fYaw;     // Yaw 角度 (度)
+//    float   fYaw;     // Yaw 角度 (度)  此项目用不到
 } 
 MPU6050_HandleDataTDF;
 

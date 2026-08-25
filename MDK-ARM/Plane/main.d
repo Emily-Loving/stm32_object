@@ -22,6 +22,8 @@ plane\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_exti.h
 plane\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dma.h
 plane\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dma_ex.h
 plane\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_cortex.h
+plane\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_adc.h
+plane\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_adc_ex.h
 plane\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash.h
 plane\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash_ex.h
 plane\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h
@@ -40,6 +42,7 @@ plane\main.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h
 plane\main.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/task.h
 plane\main.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h
 plane\main.o: ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h
+plane\main.o: ../Core/Inc/adc.h
 plane\main.o: ../Core/Inc/dma.h
 plane\main.o: ../Core/Inc/i2c.h
 plane\main.o: ../Core/Inc/tim.h

@@ -1,8 +1,7 @@
 /*
-
 本项目代码以及原理图均由  Emy  制作  最近一次修改的时间为 2026.8.22  version 1.0.0 (≧∇≦)
 
-				٩(๑>◡<๑)۶	感谢各位支持！！！！！！٩(๑>◡<๑)۶
+							感谢各位观看！！！！！！
 
 项目简介:基于 stm32f103c8t6 使用 hal 库和 rtos 的四轴飞控，通过手机蓝牙发送指令控制飞控
 
@@ -11,14 +10,12 @@
       以及n多个电阻，电容升压，驱动模块 (详情见原理图)
 	
 	
-Emy 的邮箱 1472464885@qq.com
-		   e94449431@gmail.com
+Emy 的 Email   1472464885@qq.com
+		       e94449431@gmail.com
 */
-
 /***********************************************************************************************/
-
 /*	无人机示意图  1~4均为motor
- *     1	头	 2
+ *     1		 2
  *	    \		/
  *		 \	   /
  *		  \   /
@@ -28,32 +25,37 @@ Emy 的邮箱 1472464885@qq.com
  *	  	  /	  \
  *		 /	   \
  *		/		\
- *	   4	尾   3
+ *	   4	     3
  */
-
 /***********************************************************************************************/
-
-/*					  蓝牙指令	 
+/*					  蓝牙指令  Bluetooth_Commend	 
  *
- *		蓝牙输出 [N]	 蓝牙输出		Motor 动作
- *	 	[1]				up			Motor_middle
- *		[2]				down		Motor_down
- *	 	[3]				left		Motor_left
- *	 	[4]				right		Motor_right
- *	 	[5]				go			Motor_go
- *	 	[6]				back		Motor_back
+ *		Bluetooth_in	 	    Bluetooth_out		Phenomenon
+ *
+ *	 	[1]						up					Motor_middle
+ *		[2]						down				Motor_down
+ *	 	[3]						left				Motor_left
+ *	 	[4]						right				Motor_right
+ *	 	[5]						go					Motor_go
+ *	 	[6]						back				Motor_back
+ *      [B]             		Batter:XX      	    Batter_Power
+ *
  */
- 
 /***********************************************************************************************/
-//看这里！！！！！  看这里！！！！！  看这里！！！！！  看这里！！！！！  看这里！！！！！ 
+//看这里！！！！！  look_here！！！！！  看这里！！！！！  look_here！！！！！  看这里！！！！！ 
 
 /*需要自定义的参数全部在下面，我已经调好参数了，可以根据需求自行修改，其他文件的参数不建议修改*/ 
+/*All the variable that need to custom are below , but I have adjusted it. You can custom it for youself need,
+  I not recommend custom to variable for other files*/ 
 
-//看这里！！！！！  看这里！！！！！  看这里！！！！！  看这里！！！！！  看这里！！！！！ 
+//看这里！！！！！  look_here！！！！！  看这里！！！！！  look_here！！！！！  看这里！！！！！ 
 /***********************************************************************************************/
 
 /// @blue  
-#define BLUE_SEND_TIME	5		  // 间[1,10] 蓝牙发送数据速度1最快 10最慢
+#define BLUE_SEND_TIME	    5	  // 间[1,10] 蓝牙发送数据速度1最快 10最慢
+
+/// @butter
+#define SEND_BUTTER_NUM		5     // 蓝牙发送几次电量信息
 
 /// @motor
 #define MOTOR_STEP      	200   // 区间[0,1000] 单次加/减速的 CCR 步长（≈0.2 占空比）

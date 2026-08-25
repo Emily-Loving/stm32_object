@@ -31,6 +31,8 @@ plane\freertos.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_exti.h
 plane\freertos.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dma.h
 plane\freertos.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dma_ex.h
 plane\freertos.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_cortex.h
+plane\freertos.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_adc.h
+plane\freertos.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_adc_ex.h
 plane\freertos.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash.h
 plane\freertos.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash_ex.h
 plane\freertos.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h
@@ -53,5 +55,6 @@ plane\freertos.o: ../Core/Inc/tim.h
 plane\freertos.o: ./Hardware/pid.h
 plane\freertos.o: ./Hardware/Variable.h
 plane\freertos.o: ../Core/Inc/gpio.h
+plane\freertos.o: ../Core/Inc/adc.h
 plane\freertos.o: D:\keil5\32\ARM\ARMCC\Bin\..\include\stdio.h
 plane\freertos.o: ./Hardware/Variable.h

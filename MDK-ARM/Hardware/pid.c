@@ -7,7 +7,7 @@
 /// @return
 void vMPU6050_UpdateAngles(MPU6050_DataTDF *p_Pid_Raw, MPU6050_HandleDataTDF *p_Pid_Angle, float f_Pid_Dt)
 {
-    // 1. 转换为物理单位
+    // 转换为物理单位
     float f_Pid_Ax = (float)p_Pid_Raw->s_Mpu_AccelX / ACCEL_SENSITIVITY;
     float f_Pid_Ay = (float)p_Pid_Raw->s_Mpu_AccelY / ACCEL_SENSITIVITY;
     float f_Pid_Az = (float)p_Pid_Raw->s_Mpu_AccelZ / ACCEL_SENSITIVITY;
@@ -16,11 +16,11 @@ void vMPU6050_UpdateAngles(MPU6050_DataTDF *p_Pid_Raw, MPU6050_HandleDataTDF *p_
     float f_Pid_Gy = (float)p_Pid_Raw->s_Mpu_GyroY / GYRO_SENSITIVITY;
     float f_Pid_Gz = (float)p_Pid_Raw->s_Mpu_GyroZ / GYRO_SENSITIVITY;
 
-    // 2. 从加速度计算角度 (静态倾斜)
+    // 从加速度计算角度 (静态倾斜)
     float f_Pid_AccelRoll = atan2f(f_Pid_Ay, f_Pid_Az) * RAD_TO_DEG;
     float f_Pid_AccelPitch = atan2f(-f_Pid_Ax, sqrtf(f_Pid_Ay*f_Pid_Ay + f_Pid_Az*f_Pid_Az)) * RAD_TO_DEG;
 
-    // 3. 互补滤波 (需要历史状态, 使用静态变量模拟)
+    // 互补滤波 (需要历史状态, 使用静态变量模拟)
     static float f_Pid_FusedRoll = 0.0f, f_Pid_FusedPitch = 0.0f;// fusedYaw = 0.0f;
     static uint8_t uc_Pid_IsFirstRun = 1;
 

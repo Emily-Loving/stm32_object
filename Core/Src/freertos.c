@@ -122,10 +122,10 @@ void MX_FREERTOS_Init(void) {
 
   /* Create the queue(s) */
   /* creation of BlueQueue01 */
-  BlueQueue01Handle = osMessageQueueNew (16, sizeof(uint16_t), &BlueQueue01_attributes);
+  BlueQueue01Handle = osMessageQueueNew (16, sizeof(Fly_ModeTDF), &BlueQueue01_attributes);
 
   /* creation of MPUQueue02 */
-  MPUQueue02Handle = osMessageQueueNew (24, sizeof(uint16_t), &MPUQueue02_attributes);
+  MPUQueue02Handle = osMessageQueueNew (24, sizeof(MPU6050_HandleDataTDF), &MPUQueue02_attributes);
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */

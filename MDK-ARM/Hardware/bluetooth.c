@@ -7,7 +7,6 @@ static volatile uint8_t uc_Blue_Buffer[BUFFER_SIZE];  // 命令队列
 static volatile uint8_t uc_Blue_Write = 0;            // 写索引（中断侧） 
 static volatile uint8_t uc_Blue_Read  = 0;            // 读索引（任务侧） 
 
-
 static volatile FrameState_t e_Blue_Frame = Wait_Head;
 
 /// @NOTE 蓝牙初始化：复位帧状态机与读写索引，开启串口接收中断
@@ -82,6 +81,11 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
                 v_CmdQueuePush((uint8_t)(uc_Blue_Ch - '0'));   // '1'->1 ... '6'->6 
                 e_Blue_Frame = Wait_Tail;
             }
+            else if (uc_Blue_Ch == 'B')
+            {
+                v_CmdQueuePush(8);           // 电池电量查询命令 见Variable.h的指令表
+                e_Blue_Frame = Wait_Tail;
+            }
             else if (uc_Blue_Ch == '[')
             {
                 e_Blue_Frame = Wait_Num;     // 重新开始一帧 
@@ -117,7 +121,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 /// @NOTE 从命令队列取命令，带状态保持：收到新命令后持续返回该命令，
 ///       直到下一个新命令到来才切换（队列空时保持上次状态）。
 /// @param void
-/// @return 0=up 1=down 2=left 3=right 4=go 5=back 6=wait 7=error 见 Variable.h 的指令表
+/// @return 0=up 1=down 2=left 3=right 4=go 5=back 6=wait 7=error 8=电池查询 见 Variable.h 的指令表
 uint8_t v_Bluetooth_Process(void)
 {
 	static uint8_t uc_Blue_LastCmd = 6;
@@ -136,11 +140,15 @@ uint8_t v_Bluetooth_Process(void)
     {
         uc_Blue_LastCmd = 6;       						//见Variable.h的指令表               
     }
+    else if (uc_Blue_Ch == 8)
+    {
+        //电池查询：一次性事件，透传返回 8，不改动电机保持状态
+        return 8;
+    }
     else
     {
         //非法命令 返回 error，但不打断当前保持的动作 
         return 7;										//见Variable.h的指令表
     }
-
 	return uc_Blue_LastCmd;
 }

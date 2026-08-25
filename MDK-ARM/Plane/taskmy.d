@@ -26,6 +26,8 @@ plane\taskmy.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_exti.h
 plane\taskmy.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dma.h
 plane\taskmy.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dma_ex.h
 plane\taskmy.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_cortex.h
+plane\taskmy.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_adc.h
+plane\taskmy.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_adc_ex.h
 plane\taskmy.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash.h
 plane\taskmy.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash_ex.h
 plane\taskmy.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h
@@ -50,5 +52,6 @@ plane\taskmy.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/deprecated_de
 plane\taskmy.o: ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM3/portmacro.h
 plane\taskmy.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h
 plane\taskmy.o: ../Core/Inc/gpio.h
+plane\taskmy.o: ../Core/Inc/adc.h
 plane\taskmy.o: D:\keil5\32\ARM\ARMCC\Bin\..\include\stdio.h
 plane\taskmy.o: Hardware\Variable.h

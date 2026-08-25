@@ -9,6 +9,24 @@ void vBlueTask(void)
 	
     uint8_t uc_Task_FlyCommend = v_Bluetooth_Process();
 	
+	//收到电池查询命令[B] 发送 SEND_BUTTER_NUM 次电量
+	if (uc_Task_FlyCommend == 8)
+	{
+		char c_Task_BatBuf[8];   
+		uint8_t uc_Task_BatLevel = uc_Bat_GetPercent();
+
+		sprintf(c_Task_BatBuf, "%d", uc_Task_BatLevel);
+
+		for (uint8_t uc_Task_i = 0; uc_Task_i < SEND_BUTTER_NUM; uc_Task_i++)
+		{
+			HAL_UART_Transmit(&huart1, (uint8_t *)CommendBlue[12], (uint16_t)strlen(CommendBlue[12]), 100);
+			HAL_UART_Transmit(&huart1, (uint8_t *)c_Task_BatBuf, strlen(c_Task_BatBuf), 100);
+			HAL_UART_Transmit(&huart1, (uint8_t *)CommendBlue[13], (uint16_t)strlen(CommendBlue[13]), 100);
+			HAL_UART_Transmit(&huart1, (uint8_t *)CommendBlue[8], (uint16_t)strlen(CommendBlue[8]), 100);
+		}
+		return;
+	}
+	
 	osMessageQueueGet(BlueQueue01Handle, &st_Task_FlyData, NULL, osWaitForever);//接收pid
 	
 	// 排空积压的旧帧 只保留最新一帧，消除串口显示延迟 
@@ -19,16 +37,16 @@ void vBlueTask(void)
 	
 	if (st_Task_FlyData.uc_Fly_Flag)
 	{
-		char c_Task_Buf[16];   /* 至少容纳 "-2147483648\0"(12 字节)，取 16 留余量 */
+		char c_Task_Buf[16];   // 至少容纳 "-2147483648\0"(12 字节)
 
-		//  MPU 无有效数据时角度会算成 NaN/Inf (int)NaN 会得到 -2147483648。
+		//  MPU 无有效数据时角度会算成 NaN/Inf (int)NaN 会得到 -2147483648 
 		//  这种帧直接丢弃不发，避免上位机收到脏数据
 		if (isnan(st_Task_FlyData.f_Fly_Pitch) || isinf(st_Task_FlyData.f_Fly_Pitch) ||
 		    isnan(st_Task_FlyData.f_Fly_Roll)  || isinf(st_Task_FlyData.f_Fly_Roll))
 		{
 			return;
 		}
-
+		
 		//正常状态下在命令
 		sprintf(c_Task_Buf,"%d",(int)st_Task_FlyData.f_Fly_Pitch);
 		HAL_UART_Transmit(&huart1, (uint8_t *)CommendBlue[10], (uint16_t)strlen(CommendBlue[10]), 100);
@@ -63,7 +81,7 @@ void v_MPU6050Task(void)
 	   避免全 0 脏数据经互补滤波算出 NaN 后被当角度发出。 */
 	if (vMPU6050_Read(&st_Task_Raw) == 0)
 	{
-		HAL_UART_Transmit(&huart1, (uint8_t *)CommendBlue[11], (uint16_t)strlen(CommendBlue[11]), 100);
+		HAL_UART_Transmit(&huart1, (uint8_t *)CommendBlue[7], (uint16_t)strlen(CommendBlue[7]), 100);
 		return;
 	}
 	
@@ -117,5 +135,76 @@ void LedTask(void)
 	osDelay(500);
 	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13,GPIO_PIN_RESET);
 	osDelay(500);
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_11,GPIO_PIN_SET);
+	osDelay(500);
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_11,GPIO_PIN_RESET);
+	osDelay(500);
+}
 
+/// @NOTE 读取 PA4(ADC1_IN4) 的 ADC 原始值，多次采样取平均以抑制抖动
+/// @param void
+/// @return 平均后的 12 位 ADC 原始值[0,4095]，转换失败返回 0
+uint16_t u16_Bat_ReadRaw(void)
+{
+	uint32_t u32_Bat_Sum = 0;
+	uint8_t  uc_Bat_ValidCnt = 0;
+
+	for (uint8_t uc_Bat_i = 0; uc_Bat_i < BAT_SAMPLE_TIMES; uc_Bat_i++)
+	{
+		HAL_ADC_Start(&hadc1);
+
+		if (HAL_ADC_PollForConversion(&hadc1, BAT_ADC_TIMEOUT) == HAL_OK)
+		{
+			u32_Bat_Sum += HAL_ADC_GetValue(&hadc1);
+			uc_Bat_ValidCnt++;
+		}
+
+		HAL_ADC_Stop(&hadc1);
+	}
+
+	/* 全部采样失败则返回 0，避免除零 */
+	if (uc_Bat_ValidCnt == 0)
+	{
+		return 0;
+	}
+
+	return (uint16_t)(u32_Bat_Sum / uc_Bat_ValidCnt);
+}
+
+/// @NOTE 采集并换算出电池实际电压（已还原外部分压）
+/// @param void
+/// @return 电池实际电压，单位 mV
+uint16_t u16_Bat_GetVoltage(void)
+{
+	uint16_t u16_Bat_Raw = u16_Bat_ReadRaw();
+
+	/* 采样点电压(mV) = raw / 4095 * Vref */
+	uint32_t u32_Bat_PinMv = ((uint32_t)u16_Bat_Raw * BAT_VREF_MV) / BAT_ADC_MAX;
+
+	/* 还原分压：实际电压 = 采样点电压 × 分压比 */
+	return (uint16_t)(u32_Bat_PinMv * BAT_DIV_RATIO);
+}
+
+/// @NOTE 采集电池电压并线性换算为电量百分比（按单节锂电 3.0~4.2V 区间）
+/// @param void
+/// @return 电量百分比[0,100]
+uint8_t uc_Bat_GetPercent(void)
+{
+	uint16_t u16_Bat_Mv = u16_Bat_GetVoltage();
+
+	/* 夹在有效区间，防止百分比越界或整型下溢 */
+	if (u16_Bat_Mv >= BAT_VOLT_FULL_MV)
+	{
+		return 100;
+	}
+	if (u16_Bat_Mv <= BAT_VOLT_EMPTY_MV)
+	{
+		return 0;
+	}
+
+	/* 线性映射：(当前 - 空电) / (满电 - 空电) × 100 */
+	uint32_t u32_Bat_Percent = ((uint32_t)(u16_Bat_Mv - BAT_VOLT_EMPTY_MV) * 100U)
+	                           / (BAT_VOLT_FULL_MV - BAT_VOLT_EMPTY_MV);
+
+	return (uint8_t)u32_Bat_Percent;
 }
