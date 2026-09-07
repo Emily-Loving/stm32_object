@@ -35,7 +35,8 @@ typedef enum
 	back,
 	wait,
 	error,
-} BlueFly_t;
+} 
+BlueFly_t;
 
 /// @NOTE 状态机状态
 typedef enum
@@ -43,7 +44,8 @@ typedef enum
     Wait_Head = 0,   // 等待 [ 
     Wait_Num,        // 等待数字 
     Wait_Tail        // 等待 ] 
-} FrameState_t;
+} 
+FrameState_t;
 
 void v_Bluetooth_Init(void);
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart);

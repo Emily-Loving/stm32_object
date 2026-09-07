@@ -10,7 +10,7 @@
       以及n多个电阻，电容升压，驱动模块 (详情见原理图)
 	
 	
-Emy 的 Email   1472464885@qq.com
+Emy 的 Email   3552361148@qq.com
 		       e94449431@gmail.com
 */
 /***********************************************************************************************/
@@ -62,7 +62,7 @@ Emy 的 Email   1472464885@qq.com
 #define MOTOR_MIN_CCR       200   // 区间[0,1000] 电机最小 CCR（≈0.2）
 #define MOTOR_MAX_CCR       950   // 区间[0,1000] 电机最大 CCR（≈0.95）
 #define MOTOR_MIDDLE_CCR    500   // 区间[0,1000] 中值 CCR（≈0.5）
-#define MOTOR_STOP     		0.0
+#define MOTOR_STOP     		0.0	  // Motor停止时的占空比
 #define MOTOR_STOP_CCR      0     // 停机 CCR 计数（0% 占空比）
 #define FPITCH_ANGLE_MAX	60	  // 区间[0,90] 飞行时的最大倾斜角度 
 #define FPITCH_ANGLE_MIN	-60	  // 区间[-90,0] 飞行时的最小倾斜角度

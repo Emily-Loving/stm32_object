@@ -18,7 +18,7 @@
 #define BAT_ADC_MAX          4095   // 12 位 ADC 满量程原始值
 #define BAT_DIV_RATIO        2      // 外部分压比 10k + 10k 实际电压 = 采样电压 × 2
 #define BAT_SAMPLE_TIMES     10     // 采样平均次数，抑制抖动
-#define BAT_ADC_TIMEOUT      10    // 单次 ADC 转换等待超时(ms)
+#define BAT_ADC_TIMEOUT      10     // 单次 ADC 转换等待超时(ms)
 #define BAT_VOLT_FULL_MV     4200   // 单节锂电满电电压 4.2V
 #define BAT_VOLT_EMPTY_MV    3000   // 单节锂电空电电压 3.0V
 
